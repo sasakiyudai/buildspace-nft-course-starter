@@ -83,9 +83,35 @@ const App = () => {
     }
   };
 
+  const checkAndSwitchChain = async () => {
+    const chainId = await ethereum.request({ method: "eth_chainId" });
+
+    if (chainId !== "0x4") {
+      console.log("Please connect to rinkeby...");
+
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x4" }],
+      }).then(() => {
+        return "success";
+      }).catch((err) => {
+        console.log(err);
+        return "failed";
+      });
+    }
+
+    return "already connected"
+  };
+
   const setupEventListener = async () => {
     try {
-      const { ethereum } = window;
+
+
+      const res = checkAndSwitchChain();
+      if (res === "failed") {
+        console.log("error happend");
+        return;
+      }
 
       if (ethereum) {
         const connectedContract = await connectToContract();
@@ -108,9 +134,14 @@ const App = () => {
 
   const askContractToMintNft = async () => {
     try {
-      const { ethereum } = window;
 
       if (ethereum) {
+        const res = await checkAndSwitchChain();
+
+        if (res === "failed") {
+          return;
+        }
+
         const connectedContract = await connectToContract();
 
         console.log("Going to pop wallet now to pay gas...");
@@ -165,7 +196,9 @@ const App = () => {
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
-          <p className="sub-text">{minted}/{TOTAL_MINT_COUNT}</p>
+          <p className="sub-text">
+            {minted}/{TOTAL_MINT_COUNT}
+          </p>
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
