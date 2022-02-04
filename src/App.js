@@ -1,4 +1,5 @@
 import "./styles/App.css";
+import toast, { Toaster } from "react-hot-toast";
 import twitterLogo from "./assets/twitter-logo.svg";
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
@@ -40,30 +41,32 @@ const App = () => {
   };
 
   const checkIfWalletIsConnected = async () => {
+    const toastId = toast.loading("Checking for connected wallet...");
+
     if (!ethereum) {
-      console.log("Make sure you have metamask!");
+      toast.error("Make sure you have metamask!", { id: toastId });
       return;
     } else {
-      console.log("We have the ethereum object", ethereum);
-    }
+      const accounts = await ethereum.request({ method: "eth_accounts" });
 
-    const accounts = await ethereum.request({ method: "eth_accounts" });
+      if (accounts.length === 0) {
+        toast.error("No account connected", { id: toastId });
+      } else {
+        const account = accounts[0];
+        setCurrentAccount(account);
 
-    if (accounts.length !== 0) {
-      const account = accounts[0];
-      console.log("Found an authorized account:", account);
-      setCurrentAccount(account);
-      setupEventListener();
-      updateMintedSoFar();
-    } else {
-      console.log("No authorized account found");
+        toast.success("Connected with " + account, { id: toastId });
+
+        setupEventListener();
+        updateMintedSoFar();
+      }
     }
   };
 
   const connectWallet = async () => {
-    try {
-      const { ethereum } = window;
+    const toastId = toast.loading("Connecting to wallet..");
 
+    try {
       if (!ethereum) {
         alert("Get MetaMask!");
         return;
@@ -73,13 +76,20 @@ const App = () => {
         method: "eth_requestAccounts",
       });
 
-      console.log("Connected", accounts[0]);
+      toast.success("Successfully connected!", { id: toastId });
       setCurrentAccount(accounts[0]);
 
       setupEventListener();
       updateMintedSoFar();
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      if (err.code === 4001) {
+        toast.error("User rejected the connection!", { id: toastId });
+        return;
+      } else {
+        console.log("An error occured -", err);
+        toast.error("An error occured while connecting!", { id: toastId });
+        return;
+      }
     }
   };
 
@@ -87,26 +97,32 @@ const App = () => {
     const chainId = await ethereum.request({ method: "eth_chainId" });
 
     if (chainId !== "0x4") {
-      console.log("Please connect to rinkeby...");
+      const chainToast = toast.loading("Please connect to rinkeby...");
 
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x4" }],
-      }).then(() => {
-        return "success";
-      }).catch((err) => {
-        console.log(err);
-        return "failed";
-      });
+      await ethereum
+        .request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x4" }],
+        })
+        .then(() => {
+          toast.success("Successfully connected to rinkeby!", {
+            id: chainToast,
+          });
+          return "success";
+        })
+        .catch((err) => {
+          toast.error("Failed to connect to rinkeby!", { id: chainToast });
+          console.error(err);
+
+          return "failed";
+        });
     }
 
-    return "already connected"
+    return "already connected";
   };
 
   const setupEventListener = async () => {
     try {
-
-
       const res = checkAndSwitchChain();
       if (res === "failed") {
         console.log("error happend");
@@ -134,7 +150,6 @@ const App = () => {
 
   const askContractToMintNft = async () => {
     try {
-
       if (ethereum) {
         const res = await checkAndSwitchChain();
 
@@ -142,25 +157,58 @@ const App = () => {
           return;
         }
 
+        const toastId = toast.loading("材料を集めています..", {
+          duration: 2000,
+        });
+
+        setTimeout(
+          () =>
+            toast.loading("材料をいい感じに切ったり焼いたりしてます...", {
+              id: toastId,
+              duration: 3000,
+            }),
+          1000
+        );
+
+        setTimeout(
+          () =>
+            toast.loading("Minting it as NFT...", {
+              id: toastId,
+              duration: Infinity,
+            }),
+          3000
+        );
+
         const connectedContract = await connectToContract();
 
         console.log("Going to pop wallet now to pay gas...");
         let nftTxn = await connectedContract.makeAnEpicNFT();
 
-        console.log("Mining...please wait.");
+        toast.loading("Transaction is being mined...", {
+          id: toastId,
+          duration: Infinity,
+        });
         await nftTxn.wait();
 
-        console.log(nftTxn);
-        console.log(
-          `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`
+        toast.success(
+          `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`,
+          {
+            id: toastId,
+            duration: 3000,
+          }
         );
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
 
-      updateMintedSoFar();
-    } catch (error) {
-      console.log(error);
+        setupEventListener();
+        updateMintedSoFar();
+      } else {
+        toast.error("Please install Metamask");
+        return;
+      }
+    } catch (err) {
+      toast.dismiss();
+      toast.error("Error occured, check console");
+
+      console.log(err);
     }
   };
 
@@ -192,6 +240,17 @@ const App = () => {
     <div className="App">
       <div className="container">
         <div className="header-container">
+          <Toaster
+            position="bottom-center"
+            toastOptions={{
+              style: {
+                background: "black",
+                color: "#fff",
+                maxWidth: "800px",
+                textAlign: "left",
+              },
+            }}
+          />
           <p className="header gradient-text">My NFT Collection</p>
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
