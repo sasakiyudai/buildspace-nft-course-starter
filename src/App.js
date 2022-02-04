@@ -157,13 +157,13 @@ const App = () => {
           return;
         }
 
-        const toastId = toast.loading("材料を集めています..", {
+        const toastId = toast.loading("setting up..", {
           duration: 2000,
         });
 
         setTimeout(
           () =>
-            toast.loading("材料をいい感じに切ったり焼いたりしてます...", {
+            toast.loading("so far so good...", {
               id: toastId,
               duration: 3000,
             }),
