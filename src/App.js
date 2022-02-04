@@ -6,10 +6,10 @@ import { ethers } from "ethers";
 import myEpicNft from "./utils/MyEpicNFT.json";
 
 // Constants
-const TWITTER_HANDLE = "_buildspace";
+const TWITTER_HANDLE = "__syudai__";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 // eslint-disable-next-line
-const OPENSEA_LINK = "";
+const OPENSEA_LINK = "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
 // eslint-disable-next-line
 const TOTAL_MINT_COUNT = 50;
 
@@ -270,6 +270,13 @@ const App = () => {
             target="_blank"
             rel="noreferrer"
           >{`built on @${TWITTER_HANDLE}`}</a>
+          <hr></hr>
+          <a
+            className="footer-text"
+            href={OPENSEA_LINK}
+            target="_blank"
+            rel="noreferrer"
+          >{`🌊 View Collection on OpenSea`}</a>
         </div>
       </div>
     </div>
