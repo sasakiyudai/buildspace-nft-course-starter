@@ -123,3 +123,8 @@
     background-position: 0% 50%;
   }
 }
+
+.photo {
+  height: 400px;
+  width: 400px;
+}

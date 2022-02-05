@@ -9,14 +9,15 @@ import TextField from "@mui/material/TextField";
 // Constants
 const TWITTER_HANDLE = "__syudai__";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-// eslint-disable-next-line
 const OPENSEA_LINK =
   "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
-// eslint-disable-next-line
 const TOTAL_MINT_COUNT = 10000;
 const USER_MAX_NFT_COUNT = 3;
 
 const CONTRACT_ADDRESS = "0x0e3D219Caf29779aD05e4416b2A2Cda0f00716aB";
+
+const IPFS_PREFIX_URL = "https://ipfs.io/ipfs/QmZ7idFYQMPwZcwvcii2YKUxV9xTze3gsuM58Kp6Sc9up8/"
+const IPFS_SUFFIX_URL = ".png";
 
 const { ethereum } = window;
 
@@ -178,7 +179,7 @@ const App = () => {
   const askContractToMintNft = async () => {
     if (msgValue === "" || inputError === true) {
       toast.dismiss();
-      toast.error("Please Enter Number, in donate amount (>= 0)");
+      toast.error("Please Enter Number, in support >= 0");
       return;
     }
 
@@ -297,12 +298,16 @@ const App = () => {
           <p className="sub-text">
             {totalSupply}/{TOTAL_MINT_COUNT}
           </p>
+          <img src={`${IPFS_PREFIX_URL}${totalSupply+1}${IPFS_SUFFIX_URL}`}  alt="NFT" className="photo" />
+          
+          <div></div>
+
           <TextField
             error={inputError}
             value={msgValue}
             onChange={handleInputChange}
             color="success"
-            label="donate amount >= 0 (ETH)"
+            label="support >= 0 (ETH)"
             variant="standard"
             inputRef={inputRef}
             helperText={
@@ -315,6 +320,7 @@ const App = () => {
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
+          
           <p className="sub-text">
             You've minted {youMinted} NFT{youMinted > 1 ? "s" : ""}.
           </p>
