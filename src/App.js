@@ -13,15 +13,17 @@ const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK =
   "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
 // eslint-disable-next-line
-const TOTAL_MINT_COUNT = 50;
+const TOTAL_MINT_COUNT = 10000;
+const USER_MAX_NFT_COUNT = 3;
 
-const CONTRACT_ADDRESS = "0x14b56673Bb6230469A3bae5f9aBcAA3d723a7c14";
+const CONTRACT_ADDRESS = "0x0e3D219Caf29779aD05e4416b2A2Cda0f00716aB";
 
 const { ethereum } = window;
 
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
-  const [minted, setMinted] = useState(0);
+  const [totalSupply, setTotalSupply] = useState(0);
+  const [youMinted, setYouMinted] = useState(0);
   const [msgValue, setMsgValue] = useState("");
   const inputRef = useRef(null);
   const [inputError, setInputError] = useState(false);
@@ -38,11 +40,37 @@ const App = () => {
     return connectedContract;
   };
 
-  const updateMintedSoFar = async () => {
+  const updateTotalSupply = async () => {
     const connectedContract = await connectToContract();
     const mintedSoFar = await connectedContract.totalSupply();
 
-    setMinted(mintedSoFar.toNumber());
+    setTotalSupply(mintedSoFar.toNumber());
+  };
+
+  const updateYouMinted = async () => {
+    let account = "";
+    if (currentAccount === "") {
+      if (ethereum) {
+        const accounts = await ethereum.request({ method: "eth_accounts" });
+        account = accounts[0];
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } else {
+      account = currentAccount;
+    }
+
+    const connectedContract = await connectToContract();
+    const mintedSoFar = await connectedContract.balanceOf(account);
+
+    setYouMinted(mintedSoFar.toNumber());
+  };
+
+  const isYou = (from) => {
+    if (from === currentAccount) {
+      return true;
+    }
+    return false;
   };
 
   const checkIfWalletIsConnected = async () => {
@@ -63,7 +91,8 @@ const App = () => {
         toast.success("Connected with " + account, { id: toastId });
 
         setupEventListener();
-        updateMintedSoFar();
+        updateTotalSupply();
+        updateYouMinted();
       }
     }
   };
@@ -85,7 +114,8 @@ const App = () => {
       setCurrentAccount(accounts[0]);
 
       setupEventListener();
-      updateMintedSoFar();
+      updateTotalSupply();
+      updateYouMinted();
     } catch (err) {
       if (err.code === 4001) {
         toast.error("User rejected the connection!", { id: toastId });
@@ -139,11 +169,14 @@ const App = () => {
 
         connectedContract.on("NewNFTMinted", (from, tokenId) => {
           console.log(from, tokenId.toNumber());
-          updateMintedSoFar();
+          updateTotalSupply();
+          updateYouMinted();
 
-          // alert(
-          //   `We've minted your NFT! It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
-          // );
+          if (!isYou(from)) {
+            toast.success(
+              `Someone mined just now! : https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
+            );
+          }
         });
 
         console.log("Setup event listener!");
@@ -159,6 +192,12 @@ const App = () => {
     if (msgValue === "" || inputError === true) {
       toast.dismiss();
       toast.error("Please Enter Number, in donate amount (>= 0)");
+      return;
+    }
+
+    if (youMinted === USER_MAX_NFT_COUNT) {
+      toast.dismiss();
+      toast.error("The maximum number of NFTs you can get is 3.");
       return;
     }
 
@@ -192,10 +231,14 @@ const App = () => {
         });
         await nftTxn.wait();
 
-        toast.success(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`, { id: toastId });
+        toast.success(
+          `Mined successfully! : https://rinkeby.etherscan.io/tx/${nftTxn.hash}`,
+          { id: toastId }
+        );
 
         setupEventListener();
-        updateMintedSoFar();
+        updateTotalSupply();
+        updateYouMinted();
       } else {
         toast.error("Please install Metamask");
         return;
@@ -204,9 +247,8 @@ const App = () => {
       toast.dismiss();
 
       toast.error("Error occured, check console");
-      console.log(err);
+      // console.log(err);
     }
-    toast.dismiss();
   };
 
   const handleInputChange = (e) => {
@@ -251,7 +293,7 @@ const App = () => {
       <div className="container">
         <div className="header-container">
           <Toaster
-            position="bottom-center"
+            position="top-center"
             toastOptions={{
               style: {
                 background: "black",
@@ -266,7 +308,7 @@ const App = () => {
             Each unique. Each beautiful. Discover your NFT today.
           </p>
           <p className="sub-text">
-            {minted}/{TOTAL_MINT_COUNT}
+            {totalSupply}/{TOTAL_MINT_COUNT}
           </p>
           <TextField
             error={inputError}
@@ -286,6 +328,8 @@ const App = () => {
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
+          <p className="sub-text">You've minted {youMinted} NFT{youMinted > 1 ? "s": ""}.</p>
+          <p className="sub-text">You can mint up to {USER_MAX_NFT_COUNT} NFTs.</p>
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
