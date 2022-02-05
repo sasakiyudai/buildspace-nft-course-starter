@@ -1,17 +1,14 @@
 import "./styles/App.css";
 import toast, { Toaster } from "react-hot-toast";
-import twitterLogo from "./assets/twitter-logo.svg";
 import React, { useEffect, useState, useRef } from "react";
 import { ethers } from "ethers";
 import myEpicNft from "./utils/MyEpicNFT.json";
 import TextField from "@mui/material/TextField";
 
 // Constants
-const TWITTER_HANDLE = "__syudai__";
-const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK =
-  "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
-const TOTAL_MINT_COUNT = 10000;
+const TEAM_SITE_LINK = `https://nfourtwo.com/`;
+const TEAM_LOGO_LINK =  'https://nfourtwo.com/_nuxt/img/logo.44c88d0.png';
+const TOTAL_MINT_COUNT = 1000;
 const USER_MAX_NFT_COUNT = 3;
 
 const CONTRACT_ADDRESS = "0x0e3D219Caf29779aD05e4416b2A2Cda0f00716aB";
@@ -291,7 +288,7 @@ const App = () => {
               },
             }}
           />
-          <p className="header gradient-text">My NFT Collection</p>
+          <p className="header gradient-text">NFT Collection</p>
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
@@ -329,20 +326,13 @@ const App = () => {
           </p>
         </div>
         <div className="footer-container">
-          <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
           <a
             className="footer-text"
-            href={TWITTER_LINK}
+            href={TEAM_SITE_LINK}
             target="_blank"
             rel="noreferrer"
-          >{`built on @${TWITTER_HANDLE}`}</a>
-          <hr></hr>
-          <a
-            className="footer-text"
-            href={OPENSEA_LINK}
-            target="_blank"
-            rel="noreferrer"
-          >{`🌊 View Collection on OpenSea`}</a>
+          >powered by <img alt="n42 Logo" className="n42-logo" src={TEAM_LOGO_LINK} />
+          </a>
         </div>
       </div>
     </div>
