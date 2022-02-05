@@ -171,12 +171,6 @@ const App = () => {
           console.log(from, tokenId.toNumber());
           updateTotalSupply();
           updateYouMinted();
-
-          if (!isYou(from)) {
-            toast.success(
-              `Someone mined just now! : https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
-            );
-          }
         });
 
         console.log("Setup event listener!");
