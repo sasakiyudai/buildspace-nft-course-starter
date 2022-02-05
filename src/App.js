@@ -66,13 +66,6 @@ const App = () => {
     setYouMinted(mintedSoFar.toNumber());
   };
 
-  const isYou = (from) => {
-    if (from === currentAccount) {
-      return true;
-    }
-    return false;
-  };
-
   const checkIfWalletIsConnected = async () => {
     const toastId = toast.loading("Checking for connected wallet...");
 
@@ -322,8 +315,12 @@ const App = () => {
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
-          <p className="sub-text">You've minted {youMinted} NFT{youMinted > 1 ? "s": ""}.</p>
-          <p className="sub-text">You can mint up to {USER_MAX_NFT_COUNT} NFTs.</p>
+          <p className="sub-text">
+            You've minted {youMinted} NFT{youMinted > 1 ? "s" : ""}.
+          </p>
+          <p className="sub-text">
+            You can mint up to {USER_MAX_NFT_COUNT} NFTs.
+          </p>
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
