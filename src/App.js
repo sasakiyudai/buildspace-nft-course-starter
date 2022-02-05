@@ -1,25 +1,30 @@
 import "./styles/App.css";
 import toast, { Toaster } from "react-hot-toast";
 import twitterLogo from "./assets/twitter-logo.svg";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ethers } from "ethers";
 import myEpicNft from "./utils/MyEpicNFT.json";
+import TextField from "@mui/material/TextField";
 
 // Constants
 const TWITTER_HANDLE = "__syudai__";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 // eslint-disable-next-line
-const OPENSEA_LINK = "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
+const OPENSEA_LINK =
+  "https://testnets.opensea.io/0xaae9a5e003d9a679078e97daf382a173f8e6c31b";
 // eslint-disable-next-line
 const TOTAL_MINT_COUNT = 50;
 
-const CONTRACT_ADDRESS = "0x6C77fb08E3A5fd4a374E30fD8B02F3F6d270f65f";
+const CONTRACT_ADDRESS = "0x14b56673Bb6230469A3bae5f9aBcAA3d723a7c14";
 
 const { ethereum } = window;
 
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [minted, setMinted] = useState(0);
+  const [msgValue, setMsgValue] = useState("");
+  const inputRef = useRef(null);
+  const [inputError, setInputError] = useState(false);
 
   const connectToContract = async () => {
     const provider = new ethers.providers.Web3Provider(ethereum);
@@ -34,8 +39,8 @@ const App = () => {
   };
 
   const updateMintedSoFar = async () => {
-    const nftContract = await connectToContract();
-    const mintedSoFar = await nftContract.mintedSoFar();
+    const connectedContract = await connectToContract();
+    const mintedSoFar = await connectedContract.totalSupply();
 
     setMinted(mintedSoFar.toNumber());
   };
@@ -132,14 +137,13 @@ const App = () => {
       if (ethereum) {
         const connectedContract = await connectToContract();
 
-        connectedContract.on("NewEpicNFTMinted", (from, tokenId) => {
+        connectedContract.on("NewNFTMinted", (from, tokenId) => {
           console.log(from, tokenId.toNumber());
           updateMintedSoFar();
 
           // alert(
-          //   `Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
+          //   `We've minted your NFT! It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
           // );
-
         });
 
         console.log("Setup event listener!");
@@ -152,6 +156,12 @@ const App = () => {
   };
 
   const askContractToMintNft = async () => {
+    if (msgValue === "" || inputError === true) {
+      toast.dismiss();
+      toast.error("Please Enter Number, in donate amount (>= 0)");
+      return;
+    }
+
     try {
       if (ethereum) {
         const res = await checkAndSwitchChain();
@@ -164,28 +174,17 @@ const App = () => {
           duration: 2000,
         });
 
-        setTimeout(
-          () =>
-            toast.loading("so far so good...", {
-              id: toastId,
-              duration: 3000,
-            }),
-          1000
-        );
-
-        setTimeout(
-          () =>
-            toast.loading("Minting it as NFT...", {
-              id: toastId,
-              duration: Infinity,
-            }),
-          3000
-        );
+        toast.loading("Minting your NFT...", {
+          id: toastId,
+          duration: Infinity,
+        });
 
         const connectedContract = await connectToContract();
 
         console.log("Going to pop wallet now to pay gas...");
-        let nftTxn = await connectedContract.makeAnEpicNFT();
+        let nftTxn = await connectedContract.mint(1, {
+          value: ethers.utils.parseEther(msgValue),
+        });
 
         toast.loading("Transaction is being mined...", {
           id: toastId,
@@ -193,13 +192,7 @@ const App = () => {
         });
         await nftTxn.wait();
 
-        toast.success(
-          `Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`,
-          {
-            id: toastId,
-            duration: 3000,
-          }
-        );
+        toast.success(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`, { id: toastId });
 
         setupEventListener();
         updateMintedSoFar();
@@ -209,9 +202,23 @@ const App = () => {
       }
     } catch (err) {
       toast.dismiss();
-      toast.error("Error occured, check console");
 
+      toast.error("Error occured, check console");
       console.log(err);
+    }
+    toast.dismiss();
+  };
+
+  const handleInputChange = (e) => {
+    setMsgValue(e.target.value);
+
+    if (inputRef.current) {
+      const ref = inputRef.current;
+      if (!ref.validity.valid) {
+        setInputError(true);
+      } else {
+        setInputError(false);
+      }
     }
   };
 
@@ -261,6 +268,21 @@ const App = () => {
           <p className="sub-text">
             {minted}/{TOTAL_MINT_COUNT}
           </p>
+          <TextField
+            error={inputError}
+            value={msgValue}
+            onChange={handleInputChange}
+            color="success"
+            label="donate amount >= 0 (ETH)"
+            variant="standard"
+            inputRef={inputRef}
+            helperText={
+              inputRef?.current?.validationMessage
+                ? "数値を入力してください"
+                : ""
+            }
+            inputProps={{ inputMode: "numeric", pattern: "\\d+(?:\\.\\d+)?" }}
+          />
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
