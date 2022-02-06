@@ -7,13 +7,14 @@ import TextField from "@mui/material/TextField";
 
 // Constants
 const TEAM_SITE_LINK = `https://nfourtwo.com/`;
-const TEAM_LOGO_LINK =  'https://nfourtwo.com/_nuxt/img/logo.44c88d0.png';
+const TEAM_LOGO_LINK = "https://nfourtwo.com/_nuxt/img/logo.44c88d0.png";
 const TOTAL_MINT_COUNT = 1000;
 const USER_MAX_NFT_COUNT = 3;
 
 const CONTRACT_ADDRESS = "0x0e3D219Caf29779aD05e4416b2A2Cda0f00716aB";
 
-const IPFS_PREFIX_URL = "https://ipfs.io/ipfs/QmZ7idFYQMPwZcwvcii2YKUxV9xTze3gsuM58Kp6Sc9up8/"
+const IPFS_PREFIX_URL =
+  "https://ipfs.io/ipfs/QmZ7idFYQMPwZcwvcii2YKUxV9xTze3gsuM58Kp6Sc9up8/";
 const IPFS_SUFFIX_URL = ".png";
 
 const { ethereum } = window;
@@ -173,6 +174,28 @@ const App = () => {
     }
   };
 
+  function addWalletListener() {
+
+    if (ethereum) {
+      ethereum.on("accountsChanged", (accounts) => {
+        if (accounts.length === 0) {
+          toast.error("No account connected");
+        } else {
+          const account = accounts[0];
+          setCurrentAccount(account);
+
+          toast.success("Connected with " + account);
+
+          setupEventListener();
+          updateTotalSupply();
+          updateYouMinted();
+        }
+      });
+    } else {
+      toast.error("Make sure you have metamask!");
+    }
+  }
+
   const askContractToMintNft = async () => {
     if (msgValue === "" || inputError === true) {
       toast.dismiss();
@@ -231,7 +254,7 @@ const App = () => {
     } catch (err) {
       toast.dismiss();
 
-      toast.error("Error occured, check console");
+      toast.error("Didn't mint.");
       // console.log(err);
     }
   };
@@ -270,6 +293,7 @@ const App = () => {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+    addWalletListener();
     // eslint-disable-next-line
   }, []);
 
@@ -295,8 +319,12 @@ const App = () => {
           <p className="sub-text">
             {totalSupply}/{TOTAL_MINT_COUNT}
           </p>
-          <img src={`${IPFS_PREFIX_URL}${totalSupply+1}${IPFS_SUFFIX_URL}`}  alt="NFT" className="photo" />
-          
+          <img
+            src={`${IPFS_PREFIX_URL}${totalSupply + 1}${IPFS_SUFFIX_URL}`}
+            alt="NFT"
+            className="photo"
+          />
+
           <div></div>
 
           <TextField
@@ -317,7 +345,7 @@ const App = () => {
           {currentAccount === ""
             ? renderNotConnectedContainer()
             : renderMintUI()}
-          
+
           <p className="sub-text">
             You've minted {youMinted} NFT{youMinted > 1 ? "s" : ""}.
           </p>
@@ -331,7 +359,9 @@ const App = () => {
             href={TEAM_SITE_LINK}
             target="_blank"
             rel="noreferrer"
-          >powered by <img alt="n42 Logo" className="n42-logo" src={TEAM_LOGO_LINK} />
+          >
+            powered by{" "}
+            <img alt="n42 Logo" className="n42-logo" src={TEAM_LOGO_LINK} />
           </a>
         </div>
       </div>
