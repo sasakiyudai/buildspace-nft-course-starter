@@ -94,7 +94,7 @@ const App = () => {
 
     try {
       if (!ethereum) {
-        alert("Get MetaMask!");
+        console.log("Get MetaMask!");
         return;
       }
 
@@ -175,7 +175,6 @@ const App = () => {
   };
 
   function addWalletListener() {
-
     if (ethereum) {
       ethereum.on("accountsChanged", (accounts) => {
         if (accounts.length === 0) {
@@ -192,7 +191,7 @@ const App = () => {
         }
       });
     } else {
-      toast.error("Make sure you have metamask!");
+      console.log("Get MetaMask!");
     }
   }
 
