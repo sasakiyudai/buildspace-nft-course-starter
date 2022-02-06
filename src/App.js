@@ -205,7 +205,7 @@ const App = () => {
 
     if (youMinted === USER_MAX_NFT_COUNT) {
       toast.dismiss();
-      toast.error("The maximum number of NFTs you can get is 3.");
+      toast.error("You can only mint 3 NFTs.");
       return;
     }
 
