@@ -239,8 +239,8 @@ const App = () => {
         await nftTxn.wait();
 
         toast.success(
-          `Mined successfully! : https://rinkeby.etherscan.io/tx/${nftTxn.hash}`,
-          { id: toastId }
+          `Mined successfully! : https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${totalSupply+1}`,
+          { id: toastId, duration: 3000 }
         );
 
         setupEventListener();
@@ -311,7 +311,7 @@ const App = () => {
               },
             }}
           />
-          <p className="header gradient-text">NFT Collection</p>
+          <p className="header gradient-text">ARMC kitsune</p>
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
