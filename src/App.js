@@ -239,7 +239,9 @@ const App = () => {
         await nftTxn.wait();
 
         toast.success(
-          `Mined successfully! : https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${totalSupply+1}`,
+          `Mined successfully! : https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${
+            totalSupply + 1
+          }`,
           { id: toastId, duration: 3000 }
         );
 
@@ -311,7 +313,7 @@ const App = () => {
               },
             }}
           />
-          <p className="header gradient-text">ARMC kitsune</p>
+          <p className="header gradient-text">syudai nft</p>
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
